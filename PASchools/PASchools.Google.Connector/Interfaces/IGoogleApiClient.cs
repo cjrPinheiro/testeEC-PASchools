@@ -11,7 +11,9 @@ namespace PASchools.Google.Connector.Interfaces
 {
     public interface IGoogleApiClient
     {
-        Task<DistanceResponse> GetDistanceBetweenTwoCoordinatesAsync(AddressDTO origin, Coordinate destination );
-        Task<RouteResponse> GetRouteBetweenTwoCoordinatesAsync(AddressDTO origin, Coordinate destination );
+        Task<DistanceResponse> GetDistanceBetweenTwoCoordinatesAsync(Coordinate origin, Coordinate destination );
+        Task<DirectionsResponse> GetRouteBetweenTwoCoordinatesAsync(Coordinate origin, Coordinate destination );
+        Task<DistanceResponse> GetDistanceBetweenOneOriginManyDestinationAsync(Coordinate origin, Coordinate[] destinations);
+        Task<GeolocationReponse> GetGeocodingAsync(AddressDTO origin);
     }
 }

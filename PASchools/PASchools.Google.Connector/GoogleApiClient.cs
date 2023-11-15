@@ -28,14 +28,14 @@ namespace PASchools.Google.Connector
 
         }
 
-        public async Task<DistanceResponse> GetDistanceBetweenTwoCoordinatesAsync(AddressDTO origin, Coordinate destination)
+        public async Task<DistanceResponse> GetDistanceBetweenTwoCoordinatesAsync(Coordinate origin, Coordinate destination)
         {
             DistanceResponse response = null;
             try
             {
                 Dictionary<string, string> @params = new Dictionary<string, string>() {
-                    { "destinations", $"{origin.Street}, {origin.Number} - {origin.District}, {origin.City} - SP, Brasil"},
-                    { "origins", $"{destination.Latitude}{destination.Longitude}"},
+                    { "origins", $"{origin.Latitude} {origin.Longitude}"},
+                    { "destinations", $"{destination.Latitude} {destination.Longitude}"},
                     { "units", "kilometers"},
                     { "key", $"{_apikey}"},
                     };
@@ -51,22 +51,29 @@ namespace PASchools.Google.Connector
             }
             return response;
         }
-
-        public async Task<RouteResponse> GetRouteBetweenTwoCoordinatesAsync(AddressDTO origin, Coordinate destination)
+        /// <summary>
+        /// Supports max 100 destinations per request
+        /// </summary>
+        /// <param name="origin"></param>
+        /// <param name="destinations"></param>
+        /// <returns></returns>
+        public async Task<DistanceResponse> GetDistanceBetweenOneOriginManyDestinationAsync(Coordinate origin, Coordinate[] destinations)
         {
-            RouteResponse response = null;
+            DistanceResponse response = null;
             try
             {
+                string[] destinationsString = destinations.Select(q => $"{q.Latitude},{q.Longitude}").ToArray();
+                string dests = String.Join("|", destinationsString);
                 Dictionary<string, string> @params = new Dictionary<string, string>() {
-                    { "destinations", $"{origin.Street}, {origin.Number} - {origin.District}, {origin.City} - SP, Brasil"},
-                    { "origins", $"{destination.Latitude}{destination.Longitude}"},
+                    { "origins", $"{origin.Latitude} {origin.Longitude}"},
+                    { "destinations", $"{dests}"},
                     { "units", "kilometers"},
                     { "key", $"{_apikey}"},
                     };
                 var res = await GetAsync("/distancematrix/json", @params);
                 string stringres = await res.Content.ReadAsStringAsync();
 
-                response = JsonSerializer.Deserialize<RouteResponse>(stringres);
+                response = JsonSerializer.Deserialize<DistanceResponse>(stringres);
             }
             catch (Exception)
             {
@@ -75,5 +82,50 @@ namespace PASchools.Google.Connector
             }
             return response;
         }
+        public async Task<DirectionsResponse> GetRouteBetweenTwoCoordinatesAsync(Coordinate origin, Coordinate destination)
+        {
+            DirectionsResponse response = null;
+            try
+            {
+                Dictionary<string, string> @params = new Dictionary<string, string>() {
+                    { "destination", $"{destination.Latitude},{destination.Longitude}"},
+                    { "origin", $"{origin.Latitude},{origin.Longitude}"},
+                    { "language", "pt-BR"},
+                    { "mode", "DRIVING"},
+                    { "key", $"{_apikey}"},
+                    };
+                var res = await GetAsync("/directions/json", @params);
+                string stringres = await res.Content.ReadAsStringAsync();
+
+                response = JsonSerializer.Deserialize<DirectionsResponse>(stringres);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+            return response;
+        }
+        public async Task<GeolocationReponse> GetGeocodingAsync(AddressDTO origin)
+        {
+            GeolocationReponse response = null;
+            try
+            {
+                Dictionary<string, string> @params = new Dictionary<string, string>() {
+                    { "address", $"{origin.Street}, {origin.Number} - {origin.District}, {origin.City} - {origin.State}, Brazil"},
+                    { "key", $"{_apikey}"}};
+
+                var res = await GetAsync("/geocode/json", @params);
+                string stringres = await res.Content.ReadAsStringAsync();
+
+                response = JsonSerializer.Deserialize<GeolocationReponse>(stringres);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            return response;
+        }
+
     }
 }

@@ -10,6 +10,9 @@ using PASchools.Persistence.Interfaces;
 using PASchools.Persistence.Repositories;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json;
+using PASchools.SIE.Connector.Interfaces;
+using PASchools.SIE.Connector;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -22,6 +25,7 @@ builder.Services.AddDbContext<PASchoolsContext>(
 builder.Services.AddScoped<ISchoolPersist, SchoolPersist>();
 builder.Services.AddScoped<IGoogleApiClient, GoogleApiClient>();
 builder.Services.AddScoped<ISchoolService, SchoolService>();
+builder.Services.AddScoped<ISIEApiClient, SIEApiClient>();
 //builder.Services.AddHttpClient<IGoogleApiClient, GoogleApiClient>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

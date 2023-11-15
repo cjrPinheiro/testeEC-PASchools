@@ -6,14 +6,17 @@ using PASchools.Google.Connector;
 using PASchools.Google.Connector.Interfaces;
 using PASchools.Google.Connector.Models;
 using PASchools.Google.Connector.Models.Requests;
+using PASchools.Google.Connector.Models.Response;
 using PASchools.Persistence.Interfaces;
 using PASchools.SIE.Connector;
 using PASchools.SIE.Connector.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Transactions;
 
@@ -34,29 +37,125 @@ namespace PASchools.Application.Services
             _sieApiClient = sieApiClient;
             _mapper = mapper;
         }
-        public async Task<List<SchoolDTO>> FindSchoolsByAddressOrderByDistance(AddressDTO address)
+        public async Task<List<SchoolDTO>> FindSchoolsByAddressOrderByDistance(Coordinate origin)
         {
             try
             {
                 List<School> schools = (await _schoolRepository.GetAllSchoolsAsync()).ToList();
-                var schoolsDTO = _mapper.Map<List<SchoolDTO>>(schools);
+                var schoolsDTO = _mapper.Map<List<SchoolDTO>>(schools).ToArray();
 
-
-                foreach (var item in schoolsDTO)
+                var destCoordinates = schoolsDTO.Select(q => new Coordinate() { Latitude = q.Address.Latitude, Longitude = q.Address.Longitude }).ToArray();
+                DistanceResponse response = null;
+                if (destCoordinates != null && destCoordinates.Length > 25)
                 {
-                    var coordinate = new Coordinate() { Latitude = item.Address.Latitude.ToString(), Longitude = item.Address.Longitude.ToString() };
-
-                    var response = await _googleApiClient.GetDistanceBetweenTwoCoordinatesAsync(address, coordinate);
-
-                    if (response != null && response.status == "OK")
+                    var iterations = (destCoordinates.Length / 25);
+                    iterations += destCoordinates.Length % 25 > 0 ? 1 : 0;
+                    for (int i = 0; i < iterations; i++)
                     {
-                        if (response.rows.Any())
+                        var auxDestCoordinates = destCoordinates.Skip(i * 25).Take(25).ToArray();
+
+                        if (response != null)
                         {
-                            if (response.rows.First().elements.Any())
+                            var auxResponse = await _googleApiClient.GetDistanceBetweenOneOriginManyDestinationAsync(origin, auxDestCoordinates);
+                            if (auxResponse != null && auxResponse.status == "OK")
                             {
-                                item.Distance = response.rows.First().elements.First().distance.value;
-                                item.DistanceText = response.rows.First().elements.First().distance.text;
+                                response.rows.First().elements.AddRange(auxResponse.rows.First().elements);
                             }
+                        }
+                        else
+                        {
+                            response = await _googleApiClient.GetDistanceBetweenOneOriginManyDestinationAsync(origin, auxDestCoordinates);
+                            if (response != null && response.status != "OK")
+                            {
+                                response = null;
+                            }
+                        }
+
+                    }
+                }
+                else
+                {
+                    response = await _googleApiClient.GetDistanceBetweenOneOriginManyDestinationAsync(origin, destCoordinates);
+                }
+                if (response != null && response.status == "OK")
+                {
+                    if (response.rows.Any() && response.rows.First().elements.Any())
+                    {
+                        var elements = response.rows.First().elements;
+
+                        for (int i = 0; i < elements.Count; i++)
+                        {
+                            if (elements[i].distance != null)
+                            {
+                                schoolsDTO[i].Distance = elements[i].distance.value;
+                                schoolsDTO[i].DistanceText = elements[i].distance.text;
+                            }
+
+                        }
+                    }
+                }
+                return schoolsDTO.ToList();
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<RouteDTO> GenerateRoute(Coordinate origin, Coordinate destination)
+        {
+            RouteDTO rsp = null;
+            try
+            {
+                var response = await _googleApiClient.GetRouteBetweenTwoCoordinatesAsync(origin, destination);
+
+                if (response != null && response.status == "OK")
+                {
+                    if (response.routes.Any() && response.routes.First().legs.Any())
+                    {
+                        var leg = response.routes.First().legs.First();
+
+                        rsp = new();
+                        rsp.DurationText = leg.duration != null ? $"Duração aproximada: {leg.duration.text}" : "Não foi possível calcular a duração total da rota";
+                        rsp.DistanceText = leg.distance != null ? $"Distância: {leg.duration.text}" : "Não foi possível calcular a distância total da rota";
+
+                        if (leg.steps.Any())
+                        {
+                            rsp.Steps = new();
+                            foreach (var step in leg.steps)
+                            {
+                                rsp.Steps.Add($"Trajeto: {step.distance.text} - Instrução: {step.html_instructions}");
+                            }
+                        }
+                    }
+                }
+                return rsp;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public async Task<Coordinate> GetCoordinatesAsync(AddressDTO origin)
+        {
+            Coordinate rsp = null;
+            try
+            {
+                var response = await _googleApiClient.GetGeocodingAsync(origin);
+
+                if (response != null && response.status == "OK")
+                {
+                    if (response.results.Any())
+                    {
+                        if (response.results.First().geometry != null && response.results.First().geometry.location != null)
+                        {
+                            rsp = new Coordinate()
+                            {
+                                Latitude = response.results.First().geometry.location.lat,
+                                Longitude = response.results.First().geometry.location.lng
+
+                            };
                         }
                     }
                 }
@@ -66,34 +165,15 @@ namespace PASchools.Application.Services
             {
                 throw;
             }
-            return null;
+            return rsp;
         }
 
-        public async Task<RouteDTO> GenerateRoute(AddressDTO origin, Coordinate destination)
+        public async Task<int> UpdateSchoolDatabase(int limit)
         {
+            int countReg = 0;
             try
             {
-                var response = await _googleApiClient.GetRouteBetweenTwoCoordinatesAsync(origin, destination);
-
-                if (response != null)
-                {
-
-                    return new RouteDTO();
-
-                }
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-            return null;
-        }
-
-        public async Task UpdateSchoolDatabase()
-        {
-            try
-            {
-                var response = await _sieApiClient.GetAllPASchoolsListAsync();
+                var response = await _sieApiClient.GetAllPASchoolsListAsync(limit);
 
                 foreach (var item in response.result.records)
                 {
@@ -104,28 +184,39 @@ namespace PASchools.Application.Services
                         {
                             school = new School()
                             {
-                                ActiveOrganization = item.situacao_funcionamento == "EM ATIVIDADE",
+                                ActiveOrganization = item.situacao_funcionamento?.Trim() == "EM ATIVIDADE",
                                 Code = (short)item.codigo,
-                                EducationType = item.tipo,
-                                Email = item.email,
+                                EducationType = item.tipo?.Trim(),
+                                Email = item.email?.Trim(),
                                 InepCode = item.inep,
-                                Name = item.nome,
-                                PhoneNumber = item.telefone,
-                                PublicDepartment = item.dep_administrativa == "MUNICIPAL",
-                                WebSite = item.url_website,
+                                Name = item.nome?.Trim(),
+                                PhoneNumber = item.telefone?.Trim(),
+                                PublicDepartment = item.dep_administrativa?.Trim() == "MUNICIPAL",
+                                WebSite = item.url_website?.Trim(),
                                 Address = new Address()
                                 {
                                     City = "Porto Alegre",
-                                    District = item.bairro,
+                                    District = item.bairro?.Trim(),
                                     Latitude = item.latitude,
                                     Longitude = item.longitude,
-                                    Street = item.logradouro,
+                                    Street = item.logradouro?.Trim(),
                                     Number = item.numero,
                                     PostalCode = item.cep,
                                     State = "SC"
                                 }
                             };
+
+                            if (school.Address.Latitude == 0 && school.Address.Longitude == 0)
+                            {
+                                var address = _mapper.Map<AddressDTO>(school.Address);
+                                var coord = await GetCoordinatesAsync(address);
+
+                                school.Address.Latitude = coord.Latitude;
+                                school.Address.Longitude = coord.Longitude;
+                            }
+
                             await _schoolRepository.AddAsync(school);
+                            countReg++;
                         }
                         catch (Exception)
                         {
@@ -137,24 +228,24 @@ namespace PASchools.Application.Services
                         try
                         {
 
-                            school.ActiveOrganization = item.situacao_funcionamento == "EM ATIVIDADE";
+                            school.ActiveOrganization = item.situacao_funcionamento?.Trim() == "EM ATIVIDADE";
                             school.Code = (short)item.codigo;
-                            school.EducationType = item.tipo;
-                            school.Email = item.email;
+                            school.EducationType = item.tipo?.Trim();
+                            school.Email = item.email?.Trim();
                             school.InepCode = item.inep;
-                            school.Name = item.nome;
-                            school.PhoneNumber = item.telefone;
+                            school.Name = item.nome?.Trim();
+                            school.PhoneNumber = item.telefone?.Trim();
                             school.PublicDepartment = item.dep_administrativa == "MUNICIPAL";
-                            school.WebSite = item.url_website;
+                            school.WebSite = item.url_website?.Trim();
                             if (school.Address == null)
                             {
                                 school.Address = new Address()
                                 {
                                     City = "Porto Alegre",
-                                    District = item.bairro,
+                                    District = item.bairro?.Trim(),
                                     Latitude = item.latitude,
                                     Longitude = item.longitude,
-                                    Street = item.logradouro,
+                                    Street = item.logradouro?.Trim(),
                                     Number = item.numero,
                                     PostalCode = item.cep,
                                     State = "SC"
@@ -163,16 +254,25 @@ namespace PASchools.Application.Services
                             else
                             {
                                 school.Address.City = "Porto Alegre";
-                                school.Address.District = item.bairro;
+                                school.Address.District = item.bairro?.Trim();
                                 school.Address.Latitude = item.latitude;
                                 school.Address.Longitude = item.longitude;
-                                school.Address.Street = item.logradouro;
+                                school.Address.Street = item.logradouro?.Trim();
                                 school.Address.Number = item.numero;
                                 school.Address.PostalCode = item.cep;
                                 school.Address.State = "SC";
                             }
+                            if (school.Address.Latitude == 0 && school.Address.Longitude == 0)
+                            {
+                                var address = _mapper.Map<AddressDTO>(school.Address);
+                                var coord = await GetCoordinatesAsync(address);
+
+                                school.Address.Latitude = coord.Latitude;
+                                school.Address.Longitude = coord.Longitude;
+                            }
 
                             _schoolRepository.Update(school);
+                            countReg++;
                         }
                         catch (Exception)
                         {
@@ -188,6 +288,8 @@ namespace PASchools.Application.Services
             {
                 throw;
             }
+
+            return countReg;
         }
     }
 }

@@ -9,6 +9,6 @@ namespace PASchools.SIE.Connector.Interfaces
 {
     public interface ISIEApiClient
     {
-        Task<SchoolsResponse> GetAllPASchoolsListAsync();
+        Task<SchoolsResponse> GetAllPASchoolsListAsync(int limit);
     }
 }

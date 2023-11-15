@@ -28,11 +28,11 @@ namespace PASchools.Base.Connector
                         query[param.Key] = param.Value;
                     }
                 }
-                var http = new HttpClient();
-                var builder = new UriBuilder(new Uri(string.Concat("https://dadosabertos.poa.br/api/3/action/datastore_search?resource_id=5579bc8e-1e47-47ef-a06e-9f08da28dec8&limit=400")));
+
+                var builder = new UriBuilder(new Uri(string.Concat(_httpClient.BaseAddress, endpoint)));
                 builder.Query = query.ToString();
 
-                return await http.GetAsync("https://dadosabertos.poa.br/api/3/action/datastore_search?resource_id=5579bc8e-1e47-47ef-a06e-9f08da28dec8&limit=400");
+                return await _httpClient.GetAsync(builder.Uri);
             }
             catch (Exception ex)
             {

@@ -17,12 +17,12 @@ namespace PASchools.API.Controllers
         }
         [HttpGet]
         [Route("UpdateSchoolDatabase")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(int rowsLimit)
         {
             try
             {
-                await _schoolService.UpdateSchoolDatabase();
-                return Ok("Sucess");
+                var count = await _schoolService.UpdateSchoolDatabase(rowsLimit);
+                return Ok($"{count} rows updated/added");
             }
             catch (Exception e)
             {
@@ -30,13 +30,13 @@ namespace PASchools.API.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, e);
             }
         }
-        [HttpPost]
-        [Route("Schools")]
-        public async Task<IActionResult> GetSchoolsOrderByAddress([FromBody] AddressDTO addressDTO)
+        [HttpGet]
+        [Route("SchoolsOrdered")]
+        public async Task<IActionResult> GetSchoolsOrderByAddress(double lat, double lng)
         {
             try
             {
-                List<SchoolDTO> addresses = await _schoolService.FindSchoolsByAddressOrderByDistance(addressDTO);
+                List<SchoolDTO> addresses = await _schoolService.FindSchoolsByAddressOrderByDistance(new Coordinate() { Latitude = lat, Longitude = lng});
                 if (addresses != null)
                     return Ok(addresses);
 
@@ -51,7 +51,7 @@ namespace PASchools.API.Controllers
 
         [HttpPost]
         [Route("Route")]
-        public async Task<IActionResult> GetRouteByAddress(RouteRequest request)
+        public async Task<IActionResult> GetRouteByCoordinates(RouteRequest request)
         {
             try
             {
@@ -60,6 +60,25 @@ namespace PASchools.API.Controllers
                     return Ok(route);
 
                 return BadRequest("Não foi possível realizar a consulta da rota no momento. Tente novamente em breve.");
+            }
+            catch (Exception e)
+            {
+                //log
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno na aplicação." + e.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("Coordinates")]
+        public async Task<IActionResult> GetCoordinates([FromBody] AddressDTO addressDTO)
+        {
+            try
+            {
+                Coordinate coordinates = await _schoolService.GetCoordinatesAsync(addressDTO);
+                if (coordinates != null)
+                    return Ok(coordinates);
+
+                return BadRequest("Não foi possível realizar a consulta no momento. Tente novamente em breve.");
             }
             catch (Exception e)
             {

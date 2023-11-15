@@ -8,7 +8,7 @@ namespace PASchools.Google.Connector.Models.Requests
 {
     public class Coordinate
     {
-        public string Latitude { get; set; }
-        public string Longitude { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
     }
 }

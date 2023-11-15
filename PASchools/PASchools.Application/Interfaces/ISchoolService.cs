@@ -11,8 +11,9 @@ namespace PASchools.Application.Interfaces
 {
     public interface ISchoolService
     {
-        Task<List<SchoolDTO>> FindSchoolsByAddressOrderByDistance(AddressDTO address);
-        Task<RouteDTO> GenerateRoute(AddressDTO origin, Coordinate destination);
-        Task UpdateSchoolDatabase();
+        Task<List<SchoolDTO>> FindSchoolsByAddressOrderByDistance(Coordinate coordinate);
+        Task<RouteDTO> GenerateRoute(Coordinate coordinate, Coordinate destination);
+        Task<int> UpdateSchoolDatabase(int limit);
+        Task<Coordinate> GetCoordinatesAsync(AddressDTO origin);
     }
 }
