@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PASchools.Persistence.Base
+namespace PASchools.Application.DTOs
 {
-    internal class BaseEntity
+    public class RouteDTO
     {
     }
 }

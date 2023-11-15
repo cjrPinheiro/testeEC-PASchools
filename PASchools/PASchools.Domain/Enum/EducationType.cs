@@ -4,9 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PASchools.Persistence.Entities
+namespace PASchools.Domain.Enum
 {
-    internal class School
+    public enum EducationType
     {
+        NI,
+        ChildEducation,
+        ElementarySchool,
+        EJA
     }
 }
