@@ -11,6 +11,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PASchools.Persistence", "PA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PASchools.Application", "PASchools.Application\PASchools.Application.csproj", "{52C02176-F9E7-44C1-AF2A-2FB24F0A1ADD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PASchools.Google.Connector", "PASchools.Google.Connector\PASchools.Google.Connector.csproj", "{EF674262-AAB9-4EAE-BEC4-50CBF711B2E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PASchools.Base.Connector", "PASchools.Base.Connector\PASchools.Base.Connector.csproj", "{79D17BF0-BB5D-451C-9744-161DAAED20BF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External Services", "External Services", "{7B9B56C2-2EAD-494A-9D61-339918ED4612}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PASchools.SIE.Connector", "PASchools.SIE.Connector\PASchools.SIE.Connector.csproj", "{5D979DAC-C4A5-4AD3-BB88-D71D575A87F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,9 +41,26 @@ Global
 		{52C02176-F9E7-44C1-AF2A-2FB24F0A1ADD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{52C02176-F9E7-44C1-AF2A-2FB24F0A1ADD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{52C02176-F9E7-44C1-AF2A-2FB24F0A1ADD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF674262-AAB9-4EAE-BEC4-50CBF711B2E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF674262-AAB9-4EAE-BEC4-50CBF711B2E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF674262-AAB9-4EAE-BEC4-50CBF711B2E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF674262-AAB9-4EAE-BEC4-50CBF711B2E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79D17BF0-BB5D-451C-9744-161DAAED20BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79D17BF0-BB5D-451C-9744-161DAAED20BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79D17BF0-BB5D-451C-9744-161DAAED20BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79D17BF0-BB5D-451C-9744-161DAAED20BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D979DAC-C4A5-4AD3-BB88-D71D575A87F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D979DAC-C4A5-4AD3-BB88-D71D575A87F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D979DAC-C4A5-4AD3-BB88-D71D575A87F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D979DAC-C4A5-4AD3-BB88-D71D575A87F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EF674262-AAB9-4EAE-BEC4-50CBF711B2E8} = {7B9B56C2-2EAD-494A-9D61-339918ED4612}
+		{79D17BF0-BB5D-451C-9744-161DAAED20BF} = {7B9B56C2-2EAD-494A-9D61-339918ED4612}
+		{5D979DAC-C4A5-4AD3-BB88-D71D575A87F5} = {7B9B56C2-2EAD-494A-9D61-339918ED4612}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F77D60D2-D5AF-4056-8008-32408238BCB8}
