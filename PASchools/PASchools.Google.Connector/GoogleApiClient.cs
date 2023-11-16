@@ -19,7 +19,7 @@ namespace PASchools.Google.Connector
         public string? _apikey { get; set; }
         public GoogleApiClient()
         {
-            _apikey = "";//config.GetSection("GoogleApiKey").Value;
+            _apikey = "AIzaSyAZzkj7oDuyax7KYLL1QDXlGPe9dIefqZk";//config.GetSection("GoogleApiKey").Value;
             var uri = "https://maps.googleapis.com"; //config.GetSection("GoogleApiURI").Value;
             _httpClient = new HttpClient();
             //_httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
@@ -34,8 +34,8 @@ namespace PASchools.Google.Connector
             try
             {
                 Dictionary<string, string> @params = new Dictionary<string, string>() {
-                    { "origins", $"{origin.Latitude} {origin.Longitude}"},
-                    { "destinations", $"{destination.Latitude} {destination.Longitude}"},
+                    { "origins", $"{origin.Lat} {origin.Lng}"},
+                    { "destinations", $"{destination.Lat} {destination.Lng}"},
                     { "units", "kilometers"},
                     { "key", $"{_apikey}"},
                     };
@@ -62,10 +62,10 @@ namespace PASchools.Google.Connector
             DistanceResponse response = null;
             try
             {
-                string[] destinationsString = destinations.Select(q => $"{q.Latitude},{q.Longitude}").ToArray();
+                string[] destinationsString = destinations.Select(q => $"{q.Lat},{q.Lng}").ToArray();
                 string dests = String.Join("|", destinationsString);
                 Dictionary<string, string> @params = new Dictionary<string, string>() {
-                    { "origins", $"{origin.Latitude} {origin.Longitude}"},
+                    { "origins", $"{origin.Lat} {origin.Lng}"},
                     { "destinations", $"{dests}"},
                     { "units", "kilometers"},
                     { "key", $"{_apikey}"},
@@ -88,8 +88,8 @@ namespace PASchools.Google.Connector
             try
             {
                 Dictionary<string, string> @params = new Dictionary<string, string>() {
-                    { "destination", $"{destination.Latitude},{destination.Longitude}"},
-                    { "origin", $"{origin.Latitude},{origin.Longitude}"},
+                    { "destination", $"{destination.Lat},{destination.Lng}"},
+                    { "origin", $"{origin.Lat},{origin.Lng}"},
                     { "language", "pt-BR"},
                     { "mode", "DRIVING"},
                     { "key", $"{_apikey}"},

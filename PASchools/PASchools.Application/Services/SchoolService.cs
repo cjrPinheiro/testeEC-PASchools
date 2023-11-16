@@ -42,9 +42,9 @@ namespace PASchools.Application.Services
             try
             {
                 List<School> schools = (await _schoolRepository.GetAllSchoolsAsync()).ToList();
-                var schoolsDTO = _mapper.Map<List<SchoolDTO>>(schools).ToArray();
+                var schoolsDTO = _mapper.Map<List<SchoolDTO>>(schools).Take(10).ToArray();
 
-                var destCoordinates = schoolsDTO.Select(q => new Coordinate() { Latitude = q.Address.Latitude, Longitude = q.Address.Longitude }).ToArray();
+                var destCoordinates = schoolsDTO.Select(q => new Coordinate() { Lat = q.Address.Latitude, Lng = q.Address.Longitude }).ToArray();
                 DistanceResponse response = null;
                 if (destCoordinates != null && destCoordinates.Length > 25)
                 {
@@ -94,7 +94,7 @@ namespace PASchools.Application.Services
                         }
                     }
                 }
-                return schoolsDTO.ToList();
+                return schoolsDTO.OrderBy(q=> q.Distance).ToList();
 
             }
             catch (Exception)
@@ -117,15 +117,15 @@ namespace PASchools.Application.Services
                         var leg = response.routes.First().legs.First();
 
                         rsp = new();
-                        rsp.DurationText = leg.duration != null ? $"Duração aproximada: {leg.duration.text}" : "Não foi possível calcular a duração total da rota";
-                        rsp.DistanceText = leg.distance != null ? $"Distância: {leg.duration.text}" : "Não foi possível calcular a distância total da rota";
+                        rsp.DurationText = leg.duration != null ? $"Distância total: {leg.distance.text}" : "Não foi possível calcular a distância total da rota";
+                        rsp.DistanceText = leg.distance != null ? $"Duração aproximada: {leg.duration.text}" : "Não foi possível calcular a duração total da rota";
 
                         if (leg.steps.Any())
                         {
                             rsp.Steps = new();
                             foreach (var step in leg.steps)
                             {
-                                rsp.Steps.Add($"Trajeto: {step.distance.text} - Instrução: {step.html_instructions}");
+                                rsp.Steps.Add($"Trajeto: {step.distance.text} - Instrução: <br/> {step.html_instructions}");
                             }
                         }
                     }
@@ -152,8 +152,8 @@ namespace PASchools.Application.Services
                         {
                             rsp = new Coordinate()
                             {
-                                Latitude = response.results.First().geometry.location.lat,
-                                Longitude = response.results.First().geometry.location.lng
+                                Lat = response.results.First().geometry.location.lat,
+                                Lng = response.results.First().geometry.location.lng
 
                             };
                         }
@@ -211,8 +211,8 @@ namespace PASchools.Application.Services
                                 var address = _mapper.Map<AddressDTO>(school.Address);
                                 var coord = await GetCoordinatesAsync(address);
 
-                                school.Address.Latitude = coord.Latitude;
-                                school.Address.Longitude = coord.Longitude;
+                                school.Address.Latitude = coord.Lat;
+                                school.Address.Longitude = coord.Lng;
                             }
 
                             await _schoolRepository.AddAsync(school);
@@ -267,8 +267,8 @@ namespace PASchools.Application.Services
                                 var address = _mapper.Map<AddressDTO>(school.Address);
                                 var coord = await GetCoordinatesAsync(address);
 
-                                school.Address.Latitude = coord.Latitude;
-                                school.Address.Longitude = coord.Longitude;
+                                school.Address.Latitude = coord.Lat;
+                                school.Address.Longitude = coord.Lng;
                             }
 
                             _schoolRepository.Update(school);
