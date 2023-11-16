@@ -19,7 +19,7 @@ namespace PASchools.Google.Connector
         public string? _apikey { get; set; }
         public GoogleApiClient()
         {
-            _apikey = "AIzaSyAZzkj7oDuyax7KYLL1QDXlGPe9dIefqZk";//config.GetSection("GoogleApiKey").Value;
+            _apikey = "";//config.GetSection("GoogleApiKey").Value;
             var uri = "https://maps.googleapis.com"; //config.GetSection("GoogleApiURI").Value;
             _httpClient = new HttpClient();
             //_httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
