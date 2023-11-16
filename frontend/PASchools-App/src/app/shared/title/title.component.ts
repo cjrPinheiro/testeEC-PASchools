@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 export class TitleComponent implements OnInit {
   @Input() title: string='';
   @Input() route: string='';
-  @Input() subTitle: string='Desde 2023';
+  @Input() subTitle: string='Realize a consulta de escolas de Porto Alegre com base em seu endereço.';
   @Input() iconClass: string='fa fa-user';
   @Input() listBtn: boolean = false;
   @Input() syncBtn: boolean = false;

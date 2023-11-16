@@ -1,7 +1,10 @@
-﻿using PASchools.Base.Connector;
+﻿using Microsoft.Extensions.Options;
+using PASchools.Base.Connector;
+using PASchools.Domain.Models;
 using PASchools.SIE.Connector.Interfaces;
 using PASchools.SIE.Connector.Models.Reponse;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace PASchools.SIE.Connector
@@ -9,12 +12,11 @@ namespace PASchools.SIE.Connector
     public class SIEApiClient : BaseApiClient, ISIEApiClient
     {
         private readonly string _resourceId = "";
-        public SIEApiClient()
+        public SIEApiClient(IOptions<Settings> settings)
         {
-            _resourceId = "5579bc8e-1e47-47ef-a06e-9f08da28dec8";
-            var uri = "https://dadosabertos.poa.br";
+            _resourceId = settings.Value.SIEApiSettings.Key;
             _httpClient = new HttpClient();
-            _httpClient.BaseAddress = new Uri(uri + "/api/3/action");
+            _httpClient.BaseAddress = new Uri(settings.Value.SIEApiSettings.BaseUri);
             base.SetHttpClient(_httpClient);
 
         }
