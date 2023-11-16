@@ -76,7 +76,15 @@
         </tr>
       </tfoot>
     </table>
-  </div>
+    <mat-paginator
+    [length]="pageConfig.length"
+    [pageSize]="pageConfig.pageSize"
+    [pageSizeOptions]="pageConfig.pageSizeOptions"
+    [pageIndex]="pageConfig.pageIndex"
+    (page)="handlePageEvent($event)"
+    aria-label="Selecio a página">
+  </mat-paginator>
+</div>
 
 </div>
 
@@ -97,7 +105,7 @@
             Clique para exibir a rota em etapas
           </mat-panel-title>
           <mat-panel-description>
-          <p>{{currentRoute.distanceText}}</p>
+            <p>{{currentRoute.distanceText}}</p>
           </mat-panel-description>
         </mat-expansion-panel-header>
         <div>
@@ -144,11 +152,11 @@
           (mapClick)="showSpotDetails(marker, infoWindow)"
           ></map-marker>
           <map-info-window #infoWindow="mapInfoWindow">
-          Escola: {{school.name}} <br/>
-          Telefone: {{school.phoneNumber}} <br/>
-          Email: {{school.email}} <br/>
-          Site: {{school.webSite}} <br/>
-          Endereço: {{school.address.street}},{{school.address.number}} - {{school.address.district}}, {{school.address.city}} - RS <br/>
+            Escola: {{school.name}} <br/>
+            Telefone: {{school.phoneNumber}} <br/>
+            Email: {{school.email}} <br/>
+            Site: {{school.webSite}} <br/>
+            Endereço: {{school.address.street}},{{school.address.number}} - {{school.address.district}}, {{school.address.city}} - RS <br/>
 
           </map-info-window>
         </div>

@@ -25,10 +25,7 @@ import { SelectDropDownModule } from 'ngx-select-dropdown'
 import {DropdownModule} from 'primeng/dropdown';
 import { GoogleMapsModule } from '@angular/google-maps'
 
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatSelectModule }  from '@angular/material/select';
+import {MatPaginatorModule} from '@angular/material/paginator';
 import {MatExpansionModule} from '@angular/material/expansion';
 import { HomeComponent } from './components/home/home.component';
 import { HomeListComponent } from './components/home/home-list/home-list.component';
@@ -67,11 +64,8 @@ registerLocaleData(ptBr);
       progressBar: true
     }),
     NgxSpinnerModule,
-    MatTabsModule,
-    MatFormFieldModule,
-    MatAutocompleteModule,
-    MatSelectModule,
     MatExpansionModule,
+    MatPaginatorModule,
     SelectDropDownModule,
     ProgressbarModule,
     AutoCompleteModule,

@@ -11,7 +11,9 @@ namespace PASchools.Persistence.Interfaces
     public interface ISchoolPersist : IBasePersist<School>
     {
         Task<School[]> GetAllSchoolsAsync();
+        Task<School[]> GetPagedSchoolsAsync(short index, short size);
         Task<School[]> GetAllSchoolsByStreetAsync(string street);
         Task<School> GetSchoolsByInepIdAsync(int inepId);
+        Task<int> CountSchoolsAsync();
     }
 }

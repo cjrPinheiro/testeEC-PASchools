@@ -10,6 +10,7 @@ import { Route } from '@app/models/route';
 import { SyncResponse } from '@app/models/syncResponse';
 
 import { environment } from '@environments/environment';
+import { PagedObject } from '@app/models/pagedObject';
 
 
 @Injectable()
@@ -29,6 +30,10 @@ export class HomeService {
 
   public getSchoolsOrdered(origin: Coordinate) : Observable<School[]> {
     return this.http.get<School[]>(`${this.baseURL}/SchoolsOrdered?lat=${origin.lat}&lng=${origin.lng}`);
+  }
+
+  public getPagedSchoolsOrdered(origin: Coordinate, pageIndex: number, pageSize: number) : Observable<PagedObject> {
+    return this.http.get<PagedObject>(`${this.baseURL}/PagedSchoolsOrdered?lat=${origin.lat}&lng=${origin.lng}&pageIndex=${pageIndex}&pageSize=${pageSize}`);
   }
 
   public postGetRoute(origin: Coordinate, destination: Coordinate) : Observable<Route> {

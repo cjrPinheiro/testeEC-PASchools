@@ -12,6 +12,8 @@ import { Observable } from 'rxjs';
 import { map, startWith, take } from 'rxjs/operators';
 import { Address } from '@app/models/address';
 import { Route } from '@app/models/route';
+import { PageConfig } from '@app/models/pageConfig';
+import { PagedObject } from '@app/models/pagedObject';
 
 @Component({
   selector: 'app-home-list',
@@ -30,6 +32,13 @@ export class HomeListComponent implements OnInit {
   public modalRef?: BsModalRef;
   public myControl = new FormControl();
 
+
+  pageConfig: PageConfig = {
+    length: 0,
+    pageIndex:0,
+    pageSize:10,
+    pageSizeOptions: []
+  };
 
   mapOptions: google.maps.MapOptions = {
     center: {lat: 0, lng: 0},
@@ -102,8 +111,12 @@ export class HomeListComponent implements OnInit {
       getOrdered(): void{
         this.homeService.getSchoolsOrdered(this.currentCoordinate!).subscribe({
           next: (_schools: School[]) => {
-            this.schools = _schools,
-            this.filteredSchools = this.schools,
+            this.pageConfig.length = _schools.length;
+            this.pageConfig.pageSizeOptions = [5,10,25,100, _schools.length];
+
+            this.schools =  _schools;
+            this.page(0, this.pageConfig.pageSize);
+
             this.spinner.hide();
           },
           error: (e) => {
@@ -182,4 +195,14 @@ export class HomeListComponent implements OnInit {
         event.preventDefault();
         this.form.reset();
       }
+
+      public handlePageEvent(event: any): void{
+        this.page(event.pageIndex, event.pageSize);
+      }
+
+      page(index: number, size : number): void{
+        const schoolsAux = this.schools.slice();
+        this.filteredSchools = schoolsAux.splice(index * size, size);
+      }
+
     }
