@@ -13,6 +13,7 @@ using PASchools.SIE.Connector.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Metrics;
+using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -42,7 +43,7 @@ namespace PASchools.Application.Services
             try
             {
                 List<School> schools = (await _schoolRepository.GetAllSchoolsAsync()).ToList();
-                var schoolsDTO = _mapper.Map<List<SchoolDTO>>(schools).Take(10).ToArray();
+                var schoolsDTO = _mapper.Map<List<SchoolDTO>>(schools).ToArray();
 
                 var destCoordinates = schoolsDTO.Select(q => new Coordinate() { Lat = q.Address.Latitude, Lng = q.Address.Longitude }).ToArray();
                 DistanceResponse response = null;
@@ -94,7 +95,79 @@ namespace PASchools.Application.Services
                         }
                     }
                 }
-                return schoolsDTO.OrderBy(q=> q.Distance).ToList();
+                return schoolsDTO.OrderBy(q => q.Distance).ToList();
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<PagedList<SchoolDTO>> FindPagedSchoolsByAddressOrderByDistance(Coordinate origin, short pageIndex, short pageSize)
+        {
+            try
+            {
+                List<School> schools = (await _schoolRepository.GetAllSchoolsAsync()).ToList();
+                var schoolsDTO = _mapper.Map<List<SchoolDTO>>(schools).ToArray();
+
+                var destCoordinates = schoolsDTO.Select(q => new Coordinate() { Lat = q.Address.Latitude, Lng = q.Address.Longitude }).ToArray();
+                DistanceResponse response = null;
+                if (destCoordinates != null && destCoordinates.Length > 25)
+                {
+                    var iterations = (destCoordinates.Length / 25);
+                    iterations += destCoordinates.Length % 25 > 0 ? 1 : 0;
+                    for (int i = 0; i < iterations; i++)
+                    {
+                        var auxDestCoordinates = destCoordinates.Skip(i * 25).Take(25).ToArray();
+
+                        if (response != null)
+                        {
+                            var auxResponse = await _googleApiClient.GetDistanceBetweenOneOriginManyDestinationAsync(origin, auxDestCoordinates);
+                            if (auxResponse != null && auxResponse.status == "OK")
+                            {
+                                response.rows.First().elements.AddRange(auxResponse.rows.First().elements);
+                            }
+                        }
+                        else
+                        {
+                            response = await _googleApiClient.GetDistanceBetweenOneOriginManyDestinationAsync(origin, auxDestCoordinates);
+                            if (response != null && response.status != "OK")
+                            {
+                                response = null;
+                            }
+                        }
+
+                    }
+                }
+                else
+                {
+                    response = await _googleApiClient.GetDistanceBetweenOneOriginManyDestinationAsync(origin, destCoordinates);
+                }
+                if (response != null && response.status == "OK")
+                {
+                    if (response.rows.Any() && response.rows.First().elements.Any())
+                    {
+                        var elements = response.rows.First().elements;
+
+                        for (int i = 0; i < elements.Count; i++)
+                        {
+                            if (elements[i].distance != null)
+                            {
+                                schoolsDTO[i].Distance = elements[i].distance.value;
+                                schoolsDTO[i].DistanceText = elements[i].distance.text;
+                            }
+
+                        }
+                    }
+                }
+                PagedList<SchoolDTO> rsp = new PagedList<SchoolDTO>();
+                pageSize = pageSize > 0 ? pageSize : (short)1;
+                rsp.Items = schoolsDTO.OrderBy(q => q.Distance).Skip(pageIndex * pageSize).Take(pageSize).ToList();
+                rsp.Size = pageSize;
+                rsp.Index = pageIndex;
+                rsp.TotalItems = await _schoolRepository.CountSchoolsAsync();
+                return rsp;
 
             }
             catch (Exception)
@@ -262,6 +335,7 @@ namespace PASchools.Application.Services
                                 school.Address.PostalCode = item.cep;
                                 school.Address.State = "SC";
                             }
+
                             if (school.Address.Latitude == 0 && school.Address.Longitude == 0)
                             {
                                 var address = _mapper.Map<AddressDTO>(school.Address);

@@ -59,9 +59,27 @@ namespace PASchools.API.Controllers
         {
             try
             {
-                List<SchoolDTO> addresses = await _schoolService.FindSchoolsByAddressOrderByDistance(new Coordinate() { Lat = lat, Lng = lng });
-                if (addresses != null)
-                    return Ok(addresses);
+                List<SchoolDTO> list = await _schoolService.FindSchoolsByAddressOrderByDistance(new Coordinate() { Lat = lat, Lng = lng });
+                if (list != null)
+                    return Ok(list);
+
+                return BadRequest("Não foi possível realizar a consulta no momento. Tente novamente em breve.");
+            }
+            catch (Exception e)
+            {
+                //log
+                return this.StatusCode(StatusCodes.Status500InternalServerError, "Ocorreu um erro interno na aplicação." + e.Message);
+            }
+        }
+        [HttpGet]
+        [Route("PagedSchoolsOrdered")]
+        public async Task<IActionResult> GetPagedSchoolsOrderByAddress(double lat, double lng, short pageIndex, short pageSize)
+        {
+            try
+            {
+                PagedList<SchoolDTO> list = await _schoolService.FindPagedSchoolsByAddressOrderByDistance(new Coordinate() { Lat = lat, Lng = lng }, pageIndex, pageSize);
+                if (list != null)
+                    return Ok(list);
 
                 return BadRequest("Não foi possível realizar a consulta no momento. Tente novamente em breve.");
             }
