@@ -1,12 +1,4 @@
 ﻿using PASchools.Domain.Base;
-using PASchools.Domain.Enum;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Runtime.ConstrainedExecution;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PASchools.Domain.Entities
 {

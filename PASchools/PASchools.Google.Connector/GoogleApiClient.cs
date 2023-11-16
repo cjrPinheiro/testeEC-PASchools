@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using PASchools.Base.Connector;
+using PASchools.Domain.Models;
 using PASchools.Google.Connector.Interfaces;
 using PASchools.Google.Connector.Models;
 using PASchools.Google.Connector.Models.Requests;
@@ -16,16 +18,13 @@ namespace PASchools.Google.Connector
 {
     public class GoogleApiClient : BaseApiClient, IGoogleApiClient
     {
-        public string? _apikey { get; set; }
-        public GoogleApiClient()
+        private string? _apikey { get; set; }
+        public GoogleApiClient(IOptions<Settings> settings)
         {
-            _apikey = "";//config.GetSection("GoogleApiKey").Value;
-            var uri = "https://maps.googleapis.com"; //config.GetSection("GoogleApiURI").Value;
             _httpClient = new HttpClient();
-            //_httpClient.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
-            _httpClient.BaseAddress = new Uri(uri + "/maps/api");
+            _httpClient.BaseAddress = new Uri(settings.Value.GoogleApiSettings.BaseUri);
             base.SetHttpClient(_httpClient);
-
+            _apikey = settings.Value.GoogleApiSettings.Key;
         }
 
         public async Task<DistanceResponse> GetDistanceBetweenTwoCoordinatesAsync(Coordinate origin, Coordinate destination)

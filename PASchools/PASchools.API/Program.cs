@@ -12,6 +12,7 @@ using System.Text.Json.Serialization;
 using Newtonsoft.Json;
 using PASchools.SIE.Connector.Interfaces;
 using PASchools.SIE.Connector;
+using PASchools.Domain.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,11 @@ builder.Services.AddScoped<ISchoolPersist, SchoolPersist>();
 builder.Services.AddScoped<IGoogleApiClient, GoogleApiClient>();
 builder.Services.AddScoped<ISchoolService, SchoolService>();
 builder.Services.AddScoped<ISIEApiClient, SIEApiClient>();
+
+builder.Services.Configure<Settings>(
+    builder.Configuration.GetSection("Settings"));
+
+
 //builder.Services.AddHttpClient<IGoogleApiClient, GoogleApiClient>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -34,21 +40,21 @@ builder.Services.AddControllers()
              .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
 builder.Services.AddCors();
 
-
 builder.Services.AddEndpointsApiExplorer();
+
+
 builder.Services.AddSwaggerGen();
-
-
-
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApi v1"));
 }
+
 
 app.UseHttpsRedirection();
 app.UseRouting();

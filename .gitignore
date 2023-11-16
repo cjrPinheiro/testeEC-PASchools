@@ -397,3 +397,5 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /PASchools/PASchools.API/appsettings.Production.json
+/PASchools/PASchools.API/.config
+/PASchools/PASchools.API/Properties
